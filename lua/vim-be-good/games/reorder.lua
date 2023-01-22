@@ -10,7 +10,7 @@ local boardSizeOptions = {
     tpope = 10
 }
 
-local instructions = {"Reorder 1, 2, 3, 4 to be in a ascending order.", "", ""}
+local instructions = { "Reorder 1, 2, 3, 4 to be in a ascending order.", "", "" }
 
 local ReorderRound = {}
 function ReorderRound:new(difficulty, window)
@@ -39,13 +39,14 @@ function ReorderRound:getRandomNumber(count)
     return math.random(1, count)
 end
 
-function checkAscending(lines)
+local function checkAscending(data)
     local last = 0
-    for line in lines:gmatch("%S+") do
-        local num = tonumber(line)
-        if num == nil and not line:match("^[1-4]$") then
-            return false
-        end
+    for numStr in data:gmatch("%d+") do
+        -- local unquoted = line:gsub('"(.*)"', "%1");
+        local num = tonumber(numStr)
+        -- if num == nil and not line:match('^"[1-4]"$') then
+        --     return false
+        -- end
         if num ~= last + 1 then
             return false
         end
@@ -56,11 +57,15 @@ end
 
 function ReorderRound:checkForWin()
     local lines = self.window.buffer:getGameLines()
+    local trimmed = GameUtils.trimLines(lines)
+    local concatenated = table.concat(trimmed, " ")
+    local lowercased = concatenated:lower()
 
-    return checkAscending(table.concat(lines, "\n"));
+    -- return false;
+    return checkAscending(lowercased);
 end
 
-function shuffle(nums)
+local function shuffle(nums)
     for i = #nums, 2, -1 do
         local j = math.random(i)
         nums[i], nums[j] = nums[j], nums[i]
@@ -84,17 +89,20 @@ function ReorderRound:render()
         cursorCol = self:getRandomNumber(boardSize)
         cursorLine = self:getRandomNumber(boardSize)
     end
-    log.info("ReorderRound:render      xLine: ", xLine, "      xCol: ", xCol)
-    log.info("ReorderRound:render cursorLine: ", cursorLine, " cursorCol: ", cursorCol)
 
-    local numbers = shuffle({1, 2, 3, 4});
+    local numbers = shuffle({ 1, 2, 3, 4 });
+    local mode = self:getRandomNumber(2)
 
-    local idx = 1
-    while idx <= 4 do
-        local line = lines[idx]
-        line = tostring(numbers[idx])
-        lines[idx] = line
-        idx = idx + 1
+    if mode == 1 then
+        local idx = 1
+        while idx <= 4 do
+            local line = lines[idx]
+            line = tostring(numbers[idx])
+            lines[idx] = line
+            idx = idx + 1
+        end
+    else
+        lines[2] = "foo(" .. table.concat(numbers, ", ") .. ")";
     end
 
     return lines, cursorLine, cursorCol
@@ -105,4 +113,3 @@ function ReorderRound:name()
 end
 
 return ReorderRound
-
