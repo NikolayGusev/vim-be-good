@@ -6,6 +6,7 @@ local WordRound = require("vim-be-good.games.words");
 local CiRound = require("vim-be-good.games.ci");
 local HjklRound = require("vim-be-good.games.hjkl");
 local ReorderRound = require("vim-be-good.games.reorder");
+local Surround = require("vim-be-good.games.surround");
 local WhackAMoleRound = require("vim-be-good.games.whackamole");
 local log = require("vim-be-good.log");
 local statistics = require("vim-be-good.statistics");
@@ -42,6 +43,10 @@ local games = {
 
     reorder = function(difficulty, window)
         return ReorderRound:new(difficulty, window)
+    end,
+
+    surround = function(difficulty, window)
+        return Surround:new(difficulty, window)
     end,
 
     whackamole = function(difficulty, window)
@@ -318,7 +323,7 @@ function GameRunner:run()
 
     log.info("Setting current line to", cursorLine, cursorCol)
     if cursorLine > 0 then
-        vim.api.nvim_win_set_cursor(0, {cursorLine, cursorCol})
+        vim.api.nvim_win_set_cursor(0, { cursorLine, cursorCol })
     end
 
     self.startTime = GameUtils.getTime()
@@ -343,4 +348,3 @@ function GameRunner:run()
 end
 
 return GameRunner
-
