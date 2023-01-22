@@ -5,6 +5,7 @@ local RelativeRound = require("vim-be-good.games.relative");
 local WordRound = require("vim-be-good.games.words");
 local CiRound = require("vim-be-good.games.ci");
 local HjklRound = require("vim-be-good.games.hjkl");
+local ReorderRound = require("vim-be-good.games.reorder");
 local WhackAMoleRound = require("vim-be-good.games.whackamole");
 local log = require("vim-be-good.log");
 local statistics = require("vim-be-good.statistics");
@@ -14,12 +15,12 @@ Stats = statistics:new()
 local endStates = {
     menu = "Menu",
     replay = "Replay",
-    quit = "Quit (or just ZZ like a real man)",
+    quit = "Quit (or just ZZ like a real man)"
 }
 
 local states = {
     playing = 1,
-    gameEnd = 2,
+    gameEnd = 2
 }
 
 local games = {
@@ -39,9 +40,13 @@ local games = {
         return HjklRound:new(difficulty, window)
     end,
 
+    reorder = function(difficulty, window)
+        return ReorderRound:new(difficulty, window)
+    end,
+
     whackamole = function(difficulty, window)
         return WhackAMoleRound:new(difficulty, window)
-    end,
+    end
 }
 
 local runningId = 0
@@ -58,7 +63,7 @@ function GameRunner:new(selectedGames, difficulty, window, onFinished)
     log.info("New", difficulty)
     local config = {
         difficulty = difficulty,
-        roundCount = GameUtils.getRoundCount(difficulty),
+        roundCount = GameUtils.getRoundCount(difficulty)
     }
 
     local rounds = {}
@@ -86,7 +91,7 @@ function GameRunner:new(selectedGames, difficulty, window, onFinished)
             successes = 0,
             failures = 0,
             timings = {},
-            games = {},
+            games = {}
         },
         state = states.playing
     }
@@ -144,7 +149,9 @@ function GameRunner:init()
     vim.schedule(function()
         self.window.buffer:setInstructions({})
         self.window.buffer:clear()
-        self:countdown(3, function() self:run() end)
+        self:countdown(3, function()
+            self:run()
+        end)
     end)
 end
 
@@ -168,9 +175,7 @@ function GameRunner:checkForNext()
     local item = expectedLines[idx]
 
     log.info("GameRunner:checkForNext: compared", vim.inspect(lines), vim.inspect(expectedLines))
-    log.info("GameRunner:checkForNext: deleted line is", item,
-        item == endStates.menu,
-        item == endStates.replay,
+    log.info("GameRunner:checkForNext: deleted line is", item, item == endStates.menu, item == endStates.replay,
         item == endStates.quit)
 
     local foundKey = nil
@@ -183,7 +188,7 @@ function GameRunner:checkForNext()
 
     -- todo implement this correctly....
     if foundKey then
-       self.onFinished(self, foundKey)
+        self.onFinished(self, foundKey)
     else
         log.info("GameRunner:checkForNext Some line was changed that is insignificant, rerendering")
         self.window.buffer:render(expectedLines)
@@ -228,7 +233,7 @@ function GameRunner:endRound(success)
         difficulty = self.round.difficulty,
         roundName = self.round:name(),
         success = success,
-        time = totalTime,
+        time = totalTime
     }
     Stats:logResult(result)
     log.info("endRound", self.currentRound, self.config.roundCount)
@@ -242,7 +247,9 @@ function GameRunner:endRound(success)
         return
     end
 
-    vim.schedule_wrap(function() self:run() end)()
+    vim.schedule_wrap(function()
+        self:run()
+    end)()
 end
 
 function GameRunner:close()
@@ -252,8 +259,7 @@ function GameRunner:close()
 end
 
 function GameRunner:renderEndGame()
-    self.window.buffer:debugLine(string.format(
-        "Round %d / %d", self.currentRound, self.config.roundCount))
+    self.window.buffer:debugLine(string.format("Round %d / %d", self.currentRound, self.config.roundCount))
 
     local lines = {}
     local sum = 0
@@ -297,8 +303,7 @@ function GameRunner:run()
     local roundConfig = self.round:getConfig()
     log.info("RoundName:", self.round:name())
 
-    self.window.buffer:debugLine(string.format(
-        "Round %d / %d", self.currentRound, self.config.roundCount))
+    self.window.buffer:debugLine(string.format("Round %d / %d", self.currentRound, self.config.roundCount))
 
     self.window.buffer:setInstructions(self.round.getInstructions())
     local lines, cursorLine, cursorCol = self.round:render()
